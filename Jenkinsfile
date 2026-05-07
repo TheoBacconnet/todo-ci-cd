@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18-alpine'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any
 
     environment {
         PROJECT_ID = 'todo-cicd-495614'
@@ -24,6 +19,7 @@ pipeline {
 
         stage('Install & Test') {
             steps {
+                sh 'node --version || apt-get install -y nodejs npm'
                 sh 'npm install'
                 sh 'npm test'
             }
@@ -39,8 +35,8 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GCP_KEY')]) {
                     sh """
-                        gcloud auth activate-service-account --key-file=$GCP_KEY
-                        gcloud auth configure-docker ${REGION}-docker.pkg.dev
+                        gcloud auth activate-service-account --key-file=\$GCP_KEY
+                        gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
                         docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${IMAGE}:latest
                     """
                 }
@@ -51,7 +47,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GCP_KEY')]) {
                     sh """
-                        gcloud auth activate-service-account --key-file=$GCP_KEY
+                        gcloud auth activate-service-account --key-file=\$GCP_KEY
                         gcloud run deploy ${SERVICE} \
                             --image=${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${IMAGE}:latest \
                             --platform=managed \
