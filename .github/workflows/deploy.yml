@@ -75,5 +75,6 @@ jobs:
           region: ${{ secrets.AWS_REGION }}
           application_name: ci-cd-project
           environment_name: Ci-cd-project-env
-          version_label: "app-${{ github.sha }}"
+          #Unique label for every time it runs so it doesn't collide
+          version_label: "app-${{ github.sha }}-${{ github.run_id }}"
           deployment_package: deploy.zip
