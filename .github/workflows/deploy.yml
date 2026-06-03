@@ -78,3 +78,4 @@ jobs:
           #Unique label for every time it runs so it doesn't collide
           version_label: "app-${{ github.sha }}-${{ github.run_id }}"
           deployment_package: deploy.zip
+          use_existing_version_if_available: true
